@@ -13,7 +13,9 @@ const char* mqtt_pass = "!M0rpheus";
 
 #define mqtt_server "192.168.0.3"
 #define keypad_code_topic "garage/keypad/code"
-#define response_topic "stat/lights/indoor/passage/POWER2"
+//These two are from the garage controller, used here to play the success tune on buzzer
+#define frontdoor_status_topic "garage/door/status/front"
+#define backdoor_status_topic "garage/door/status/back"
 
 //This can be used to output the date the code was compiled
 const char compile_date[] = __DATE__ " " __TIME__;
@@ -86,9 +88,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
   //Handle mqtt messages received my this NodeMCU
   payload[length] = '\0';
   strTopic = String((char*)topic);
-  if (strTopic == response_topic) {
+  if (strTopic == frontdoor_status_topic || strTopic == backdoor_status_topic) {
     String doorState = String((char*)payload);
-    if (doorState == "ON" || doorState == "OFF") {
+    if (doorState == "open" || doorState == "closed") {
       successTone();
     }else{
       failTone();
@@ -147,7 +149,7 @@ void reconnect() {
   Serial.print("Attempting MQTT connection...");
   if (client.connect(host, mqtt_user, mqtt_pass)) {
     Serial.println("connected");
-     client.subscribe("stat/#");
+     client.subscribe("garage/door/status/#");
   } else {
     Serial.print("failed, rc=");
     Serial.print(client.state());
