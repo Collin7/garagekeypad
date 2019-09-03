@@ -6,10 +6,10 @@
 #include <Keypad.h>
 
 const char* host = "Garage Controller Keypad";
-const char* ssid = "Morpheus";
-const char* password = "b5eea63f65";
-const char* mqtt_user = "CDW-SmartHouse";
-const char* mqtt_pass = "!M0rpheus";
+const char* ssid = "SSID";
+const char* password = "WIFI PASSWORD";
+const char* mqtt_user = "MQTT Username";
+const char* mqtt_pass = "MQTT Password";
 
 #define mqtt_server "192.168.0.3"
 #define keypad_code_topic "garage/keypad/code"
@@ -23,6 +23,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 //Initialize Objects
 WiFiClient espCgarageKeypad;
 SimpleTimer timer;
+int timerId;
 PubSubClient client(espCgarageKeypad);
 
 String input = "";   // keypad input
@@ -39,10 +40,8 @@ char keys[ROWS][COLS] = {
   {'*', '0', '#', 'D'}
 };
 
-// Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins.
-byte rowPins[ROWS] = {13, 12, 14, 2};
-// Connect keypad COL0, COL1 and COL2 to these Arduino pins.
-byte colPins[COLS] = {0, 4, 5, 16};
+byte rowPins[ROWS] = {0, 4, 5, 16}; //D3 D2 D1 D0
+byte colPins[COLS] = {13, 12, 14, 2}; //D7 D6 D5 D4
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
@@ -64,7 +63,8 @@ void setup() {
   ArduinoOTA.setHostname("Garage Keypad");
   ArduinoOTA.begin();
 
-  timer.setInterval(30000, clearInput); //Clear input every 30 sec if not empty
+  timerId = timer.setInterval(10000, clearInput); //Clear input every 10 sec if not empty
+  timer.disable(timerId);
 }
 
 void loop() {
@@ -81,6 +81,8 @@ void loop() {
 void clearInput() {
   if (input != "") {
     input = "";
+    cancelSoundEffect();
+    timer.disable(timerId);
   }
 }
 
@@ -103,21 +105,26 @@ void readKeypadPresses() {
   if (key != NO_KEY) {
     //    check if (key != 'A' && key != 'B' && key != 'C' && key != 'D' && key != '#' && key != '*')
     if (key != 'C' && key != '#') {
+      timer.enable(timerId);
       buttonPressSoundEffect();
       input += key;
-      //      Serial.print(key);
+//      Serial.print(key);
     }
   }
 
   if (key == 'C') {
     cancelSoundEffect();
     input = "";
+    timer.disable(timerId);
+//    Serial.print(key);
   }
 
   if (key == '#') {
     buttonPressSoundEffect();
     client.publish(keypad_code_topic, String(input).c_str());
     input = "";
+    timer.disable(timerId);
+//    Serial.print(key);
   }
 }
 
