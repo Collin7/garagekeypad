@@ -6,10 +6,10 @@
 #include <Keypad.h>
 
 const char* host = "Garage Controller Keypad";
-const char* ssid = "SSID";
+const char* ssid = "SSID NAME";
 const char* password = "WIFI PASSWORD";
-const char* mqtt_user = "MQTT Username";
-const char* mqtt_pass = "MQTT Password";
+const char* mqtt_user = "CDW-SmartHouse";
+const char* mqtt_pass = "MQTT PASSWORD";
 
 #define mqtt_server "192.168.0.3"
 #define keypad_code_topic "garage/keypad/code"
@@ -63,7 +63,7 @@ void setup() {
   ArduinoOTA.setHostname("Garage Keypad");
   ArduinoOTA.begin();
 
-  timerId = timer.setInterval(10000, clearInput); //Clear input every 10 sec if not empty
+  timerId = timer.setInterval(20000, clearInput); //Clear input every 10 sec if not empty
   timer.disable(timerId);
 }
 
@@ -103,12 +103,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void readKeypadPresses() {
   char key = keypad.getKey();
   if (key != NO_KEY) {
-    //    check if (key != 'A' && key != 'B' && key != 'C' && key != 'D' && key != '#' && key != '*')
+    
     if (key != 'C' && key != '#') {
       timer.enable(timerId);
       buttonPressSoundEffect();
       input += key;
-//      Serial.print(key);
     }
   }
 
@@ -116,7 +115,6 @@ void readKeypadPresses() {
     cancelSoundEffect();
     input = "";
     timer.disable(timerId);
-//    Serial.print(key);
   }
 
   if (key == '#') {
@@ -124,7 +122,6 @@ void readKeypadPresses() {
     client.publish(keypad_code_topic, String(input).c_str());
     input = "";
     timer.disable(timerId);
-//    Serial.print(key);
   }
 }
 
