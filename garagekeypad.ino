@@ -1,3 +1,4 @@
+#include <Credentials.h>
 #include <SimpleTimer.h>
 #include <ESP8266WiFi.h>
 #include <ArduinoOTA.h>
@@ -6,12 +7,7 @@
 #include <Keypad.h>
 
 const char* host = "Garage Controller Keypad";
-const char* ssid = "SSID NAME";
-const char* password = "WIFI PASSWORD";
-const char* mqtt_user = "CDW-SmartHouse";
-const char* mqtt_pass = "MQTT PASSWORD";
 
-#define mqtt_server "192.168.0.3"
 #define keypad_code_topic "garage/keypad/code"
 //These two are from the garage controller, used here to play the success tune on buzzer
 #define frontdoor_status_topic "garage/door/status/front"
@@ -57,7 +53,7 @@ void setup() {
   Serial.begin(115200);
   setup_wifi();
 
-  client.setServer(mqtt_server, 1883);
+  client.setServer(MQTT_SERVER, MQTT_PORT);
   client.setCallback(callback); //callback is the function that gets called for a topic sub
 
   ArduinoOTA.setHostname("Garage Keypad");
@@ -130,10 +126,10 @@ void setup_wifi() {
   delay(10);
   Serial.println();
   Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println(WIFI_SSID);
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -151,7 +147,7 @@ void setup_wifi() {
 void reconnect() {
   //Reconnect to Wifi and to MQTT. If Wifi is already connected, then autoconnect doesn't do anything.
   Serial.print("Attempting MQTT connection...");
-  if (client.connect(host, mqtt_user, mqtt_pass)) {
+  if (client.connect(host, MQTT_USERNAME, MQTT_PASSWORD)) {
     Serial.println("connected");
      client.subscribe("garage/door/status/#");
   } else {
