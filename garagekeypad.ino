@@ -12,6 +12,7 @@ const char* host = "Garage Controller Keypad";
 //These two are from the garage controller, used here to play the success tune on buzzer
 #define frontdoor_status_topic "garage/door/status/front"
 #define backdoor_status_topic "garage/door/status/back"
+#define restart_topic "garage/door/status/restart"
 
 //This can be used to output the date the code was compiled
 const char compile_date[] = __DATE__ " " __TIME__;
@@ -93,6 +94,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
     }else{
       failTone();
     }
+  } else if(strTopic == restart_topic) {
+    restartESP();
   }
 }
 
@@ -189,4 +192,8 @@ void cancelSoundEffect() {
   tone(SPEAKER_PIN, cancelTone);
   delay(100);
   noTone(SPEAKER_PIN);
+}
+
+void restartESP() {
+  ESP.restart();
 }
