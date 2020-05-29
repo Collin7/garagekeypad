@@ -91,10 +91,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
     String doorState = String((char*)payload);
     if (doorState == "open" || doorState == "closed") {
       successTone();
-    }else{
+    } else {
       failTone();
     }
-  } else if(strTopic == restart_topic) {
+  } else if (strTopic == restart_topic) {
     restartESP();
   }
 }
@@ -102,9 +102,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
 void readKeypadPresses() {
   char key = keypad.getKey();
   if (key != NO_KEY) {
-    
+    timer.enable(timerId);
     if (key != 'C' && key != '#') {
-      timer.enable(timerId);
+      timer.restartTimer(timerId);
       buttonPressSoundEffect();
       input += key;
     }
@@ -149,16 +149,27 @@ void setup_wifi() {
 
 void reconnect() {
   //Reconnect to Wifi and to MQTT. If Wifi is already connected, then autoconnect doesn't do anything.
-  Serial.print("Attempting MQTT connection...");
-  if (client.connect(host, MQTT_USERNAME, MQTT_PASSWORD)) {
-    Serial.println("connected");
-     client.subscribe("garage/door/status/#");
-  } else {
-    Serial.print("failed, rc=");
-    Serial.print(client.state());
-    Serial.println(" try again in 5 seconds");
-    // Wait 5 seconds before retrying
-    delay(5000);
+
+  int retries = 0;
+  while (!client.connected()) {
+    if (retries < 15) {
+      Serial.print("Attempting MQTT connection...");
+      //Attempt to connect
+      if (client.connect(host, MQTT_USERNAME, MQTT_PASSWORD)) {
+        Serial.println("connected");
+        client.subscribe("garage/door/status/#");
+      } else {
+        Serial.print("failed, rc=");
+        Serial.print(client.state());
+        Serial.println(" try again in 5 seconds");
+        retries++;
+        // Wait 5 seconds before retrying
+        delay(5000);
+      }
+    }
+    if (retries > 14) {
+      ESP.restart();
+    }
   }
 }
 
