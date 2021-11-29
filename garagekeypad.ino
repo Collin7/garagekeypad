@@ -6,7 +6,7 @@
 #include <ESP8266SSDP.h>
 #include <Keypad.h>
 
-const char* host = "Garage Controller Keypad";
+const char* DEVICE_NAME = "GARAGE KEYPAD";
 
 #define keypad_code_topic "garage/keypad/code"
 //These two are from the garage controller, used here to play the success tune on buzzer
@@ -18,10 +18,10 @@ const char* host = "Garage Controller Keypad";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 //Initialize Objects
-WiFiClient espCgarageKeypad;
+WiFiClient garageKeypad;
 SimpleTimer timer;
 int timerId;
-PubSubClient client(espCgarageKeypad);
+PubSubClient client(garageKeypad);
 
 String input = "";   // keypad input
 String strTopic;
@@ -57,7 +57,7 @@ void setup() {
   client.setServer(MQTT_SERVER, MQTT_PORT);
   client.setCallback(callback); //callback is the function that gets called for a topic sub
 
-  ArduinoOTA.setHostname("Garage Keypad");
+  ArduinoOTA.setHostname(DEVICE_NAME);
   ArduinoOTA.begin();
 
   timerId = timer.setInterval(20000, clearInput); //Clear input every 10 sec if not empty
@@ -100,27 +100,30 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void readKeypadPresses() {
+
   char key = keypad.getKey();
-  if (key != NO_KEY) {
+
+  if (key) {
     timer.enable(timerId);
+
     if (key != 'C' && key != '#') {
       timer.restartTimer(timerId);
       buttonPressSoundEffect();
       input += key;
     }
-  }
 
-  if (key == 'C') {
-    cancelSoundEffect();
-    input = "";
-    timer.disable(timerId);
-  }
+    if (key == 'C') {
+      cancelSoundEffect();
+      input = "";
+      timer.disable(timerId);
+    }
 
-  if (key == '#') {
-    buttonPressSoundEffect();
-    client.publish(keypad_code_topic, String(input).c_str());
-    input = "";
-    timer.disable(timerId);
+    if (key == '#') {
+      buttonPressSoundEffect();
+      client.publish(keypad_code_topic, String(input).c_str());
+      input = "";
+      timer.disable(timerId);
+    }
   }
 }
 
@@ -155,7 +158,7 @@ void reconnect() {
     if (retries < 15) {
       Serial.print("Attempting MQTT connection...");
       //Attempt to connect
-      if (client.connect(host, MQTT_USERNAME, MQTT_PASSWORD)) {
+      if (client.connect(DEVICE_NAME, MQTT_USERNAME, MQTT_PASSWORD)) {
         Serial.println("connected");
         client.subscribe("garage/door/status/#");
       } else {
