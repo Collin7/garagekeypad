@@ -13,6 +13,7 @@ const char* DEVICE_NAME = "GARAGE KEYPAD";
 #define frontdoor_status_topic "garage/door/status/front"
 #define backdoor_status_topic "garage/door/status/back"
 #define restart_topic "garage/door/status/restart"
+#define unknown_code_topic "garage/keypad/code/error"
 
 //This can be used to output the date the code was compiled
 const char compile_date[] = __DATE__ " " __TIME__;
@@ -94,7 +95,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
     } else {
       failTone();
     }
-  } else if (strTopic == restart_topic) {
+  } else if (strTopic == unknown_code_topic){
+    failTone();
+  }else if (strTopic == restart_topic) {
     restartESP();
   }
 }
@@ -161,6 +164,7 @@ void reconnect() {
       if (client.connect(DEVICE_NAME, MQTT_USERNAME, MQTT_PASSWORD)) {
         Serial.println("connected");
         client.subscribe("garage/door/status/#");
+        client.subscribe("garage/keypad/code/error");
       } else {
         Serial.print("failed, rc=");
         Serial.print(client.state());
