@@ -161,7 +161,7 @@ void reconnect() {
     if (retries < 15) {
       Serial.print("Attempting MQTT connection...");
       //Attempt to connect
-      if (client.connect(DEVICE_NAME, MQTT_USERNAME, MQTT_PASSWORD, "controller/last/will", 0, false,"Keypad Controller Offline")) {
+      if (client.connect(DEVICE_NAME, MQTT_USERNAME, MQTT_PASSWORD)) {
         Serial.println("connected");
         client.subscribe("garage/door/status/#");
         client.subscribe("garage/keypad/code/error");
