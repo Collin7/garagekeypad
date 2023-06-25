@@ -105,6 +105,7 @@ void readKeypadPresses() {
   }
 
   if (key == 'C') {
+    cancelSoundEffect();
     clearInput();
   }
 
@@ -120,8 +121,8 @@ void readKeypadPresses() {
 }
 
 void clearInput() {
-  cancelSoundEffect();
   if (input[0] != '\0') {
+    cancelSoundEffect();
     inputIndex = 0;
     input[0] = '\0';
   }
