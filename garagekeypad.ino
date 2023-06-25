@@ -86,7 +86,7 @@ void readKeypadPresses() {
   char key = keypad.getKey();
 
   if (key == NO_KEY) {
-    if (millis() - lastKeyPressTime >= NO_ACTIVITY_INPUT_TIMEOUT) {
+    if (millis() - lastKeyPressTime >= NO_ACTIVITY_INPUT_TIMEOUT && input[0] != '\0') {
       clearInput();
     }
     return;
@@ -105,7 +105,6 @@ void readKeypadPresses() {
   }
 
   if (key == 'C') {
-    cancelSoundEffect();
     clearInput();
   }
 
@@ -121,8 +120,8 @@ void readKeypadPresses() {
 }
 
 void clearInput() {
+  cancelSoundEffect();
   if (input[0] != '\0') {
-    cancelSoundEffect();
     inputIndex = 0;
     input[0] = '\0';
   }
